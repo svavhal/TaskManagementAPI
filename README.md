@@ -1,24 +1,10 @@
 # README
-
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Task Mgmt API 
+This application performs following activities:
+*. View a list of tasks.
+*. Add a new task.
+*. Edit an existing task.
+*. Delete a task.
+*. Feature to mark tasks as "Done."
+*. Display tasks in a list, including their title, description, status, and due date.
+*. The application has proper error handling and validation.
