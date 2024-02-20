@@ -9,8 +9,10 @@ module Api
       # GET v1/tasks
       def index
         @tasks = @current_user.tasks
-        @tasks = @tasks.where(status: params[:status]) if params[:status].present?
-        @tasks = @tasks.paginate(page: params[:page], per_page: params[:per_page])
+        @tasks = filter_tasks(@tasks, params)
+        # Use a helper method for sorting
+        @tasks = sort_tasks(@tasks, params[:sort_by], params[:sort_order])
+        @tasks = paginate_tasks(@tasks, params[:page], params[:per_page])
         render json: @tasks, each_serializer: TaskSerializer
       end
 
@@ -62,8 +64,43 @@ module Api
         render json: { status: 'error', message: 'Task not found' }, status: :not_found
       end
 
+      def filter_tasks(tasks, params)
+        # Filter by status
+        tasks = tasks.where(status: params[:status]) if params[:status].present?
+
+        # Filter by title
+        if params[:title].present?
+          filter = JSON.parse(params[:title])
+          tasks = tasks.where('title LIKE ?', filter)
+        end
+
+        # Filter by description
+        if params[:description].present?
+          filter = JSON.parse(params[:description])
+          tasks = tasks.where('description LIKE ?', filter)
+        end
+        # Filter by due date
+        tasks = tasks.where(due_date: params[:due_date]) if params[:due_date].present?
+
+        tasks
+      end
+
+      def sort_tasks(tasks, sort_by, sort_order)
+        allowed_sort_attributes = %w[title description status due_date created_at]
+        sort_by = allowed_sort_attributes.include?(sort_by&.downcase) ? sort_by : 'created_at'
+        sort_order = %w[asc desc].include?(sort_order&.downcase) ? sort_order : 'asc'
+        tasks.order(sort_by => sort_order)
+      end
+
+      def paginate_tasks(tasks, page, per_page)
+        per_page = (per_page.to_i.positive? ? per_page : 10).to_i
+        page = (page.to_i.positive? ? page : 1).to_i
+
+        tasks.paginate(page: page, per_page: per_page)
+      end
+
       def task_params
-        params.require(:task).permit(:title, :description, :status, :due_date)
+        params.require(:task).permit(:title, :description, :status, :due_date, :sort_by, :sort_order)
       end
     end
   end

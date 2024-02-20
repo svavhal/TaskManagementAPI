@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   def authenticate_request
     header = request.headers['Authorization']
     header = header.split(' ').last if header
-    decoded = decode(header)
+    decoded = JsonWebToken.decode(header)
     @current_user = User.find(decoded[:user_id])
     render json: { error: 'Not Authorized' }, status: 401 unless @current_user
   end
